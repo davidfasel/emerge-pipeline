@@ -18,28 +18,24 @@ def main():
     except IOError, e:
         usage("Error: VCF file(s) not found: '%s'\n" % str(e), parser)
 
-
+    out_dir = args.outdirectory or "None specified"
     print """Starting annotation pipeline with the following options:\n
     VCF File(s): %s
+    Output directory: %s
     Merge VCF files: %s
     Annotate using Seattle Seq: %s
     Filter by PASS: %s
     Filter by QUAL score: %s
-    """ %(args.file, args.merge, args.seaseq, args.passfilter, args.qualfilter)
+    """ %(args.file, out_dir, args.merge, args.seaseq, args.passfilter, args.qualfilter)
 
     ## Apply Qual filters
 
     #subprocess.call(["bcftools", "merge", "tests/sample.vcf.gz", "tests/sample2.vcf.gz", ">", "temp.vcf"])
-    subprocess.call(["bcftools merge tests/sample.vcf.gz tests/sample2.vcf.gz > temp2.vcf"], stderr=subprocess.STDOUT, shell=True)
+    subprocess.call(["bcftools merge tests/sample.vcf.gz tests/sample2.vcf.gz > tests/temp4.vcf"], stderr=subprocess.STDOUT, shell=True)
     #subprocess.call(["bcftools merge tests/sample*.vcf.gz > temp2.vcf"], shell=True)
 
     ## merge the files
 
-
-def usage(error, parser):
-    print error
-    parser.print_help()
-    sys.exit(0)
 
 
 #
@@ -84,10 +80,19 @@ def check_if_vcf_files_exist(paths):
         for p in paths:
             if (os.path.isfile(p)) and re.search(".vcf(.gz)?$", p):
                 list_of_vcf_files += [p]
+                if not os.path.isfile("%s.csi" % p):
+                    print "Indexing %s" % p
+                    subprocess.call(["bcftools index %s" % p], stderr=subprocess.STDOUT, shell=True)
             else:
                 raise IOError(p)
 
         return list_of_vcf_files
+
+
+def usage(error, parser):
+    print error
+    parser.print_help()
+    sys.exit(1)
 
 
 if __name__ == "__main__":

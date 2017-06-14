@@ -3,6 +3,7 @@ import unittest
 import sys
 from StringIO import StringIO
 import subprocess
+import os
 
 class TestHello(unittest.TestCase):
     def test_main(self):
@@ -37,10 +38,18 @@ class TestFunctional(unittest.TestCase):
         )
 
     def test_program_is_missing_vcf_file(self):
-        self.assertRegexpMatches(
-            subprocess.check_output(["python emerge_pipeline.py -f bad path"], shell=True),
-            "Error"
-        )
+        with self.assertRaises(subprocess.CalledProcessError):
+            subprocess.check_output(["python emerge_pipeline.py -f bad path"], shell=True)
+            self.assertRegexpMatches(
+                subprocess.check_output(["python emerge_pipeline.py -f bad path"], shell=True),
+                "Error"
+            )
+
+    def test_a_merged_vcf_is_created(self):
+        #todo
+        self.assertTrue(os.path.isfile("tests/sample.vcf.gz"))
+
+
 
 
 
